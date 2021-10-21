@@ -18,6 +18,10 @@
 [
     {
         "SWITCH_TABLE:switch": {
+{% if ("Mellanox-SN3800-D28C50" in DEVICE_METADATA.localhost.hwsku) or ("Mellanox-SN3800-C64" in DEVICE_METADATA.localhost.hwsku) or ("Mellanox-SN3800-D28C49S1" in DEVICE_METADATA.localhost.hwsku) or ("Mellanox-SN2700-D48C8" in DEVICE_METADATA.localhost.hwsku)  %}
+            "vxlan_src": 0xFF00,
+            "vxlan_mask": 8
+{% endif %}
             "ecmp_hash_seed": "{{ hash_seed_value }}",
             "lag_hash_seed": "{{ hash_seed_value }}",
             "fdb_aging_time": "600"
