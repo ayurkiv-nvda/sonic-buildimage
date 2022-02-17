@@ -318,6 +318,12 @@ CPU_MASK = PORT_TYPE_MASK & (PORT_TYPE_CPU << PORT_TYPE_OFFSET)
 # parameters for SFP presence
 SFP_STATUS_INSERTED = '1'
 
+#SFP constants
+SFP_PAGE_SIZE = 256
+SFP_IDENTFIER_UPPER_PAGE = 128
+
+BYTES_IN_DWORD = 4
+
 # Global logger class instance
 logger = Logger()
 
@@ -408,6 +414,7 @@ class SFP(SfpBase):
         self.slot_id = slot_id
         self._sfp_type = None
         self._sfp_capability = None
+        self.mst_pci_device = subprocess.check_output("ls /dev/mst/ | grep pciconf", universal_newlines=True, shell=True).strip()
         
     @property
     def sdk_handle(self):
@@ -694,6 +701,135 @@ class SFP(SfpBase):
             return float(t_str)
         else:
             return 'N/A'
+
+    def write_eeprom(self, offset, num_bytes, write_buffer):
+        """
+        write eeprom specfic bytes beginning from a random offset with size as num_bytes
+        and write_buffer as the required bytes
+
+        Returns:
+            Boolean, true if the write succeeded and false if it did not succeed.
+
+        Example:
+        mlxreg -d /dev/mst/mt52100_pciconf0 --reg_name MCIA --indexes slot_index=0,module=1,device_address=154,page_number=5,i2c_device_address=0x50,size=1,bank_number=0 --set dword[0]=0x01000000 -y
+        """
+        if num_bytes != len(write_buffer):
+            logger.log_error("Error mismatch between buffer length and number of bytes to be written")
+            return False
+
+        # recalculate offset and page
+        if offset < SFP_PAGE_SIZE:
+            page = 0
+            device_address = offset
+        else:
+            page = (offset - SFP_PAGE_SIZE) // SFP_IDENTFIER_UPPER_PAGE + 1
+            # calculate offset per page
+            device_address = (offset - SFP_PAGE_SIZE) % SFP_IDENTFIER_UPPER_PAGE + SFP_IDENTFIER_UPPER_PAGE
+
+        used_bytes_in_dword = len(write_buffer) % BYTES_IN_DWORD
+
+        res = ""
+        i = 0
+
+        for x in write_buffer:
+            word = hex(x)[2:]
+            if i == 0:
+                res = "dword[0]=0x"
+            elif i % BYTES_IN_DWORD == 0:
+                res+= "dword[" + str((i+1)//BYTES_IN_DWORD) + "]=0x"
+
+            res += word.zfill(2)
+
+            i += 1
+            if i % BYTES_IN_DWORD == 0:
+                res += ","
+
+        if used_bytes_in_dword % BYTES_IN_DWORD != 0:
+            res += (BYTES_IN_DWORD - used_bytes_in_dword) * "00"
+
+        try:
+            cmd = "mlxreg -d /dev/mst/{} --reg_name MCIA --indexes \
+                    slot_index={},module={},device_address={},page_number={},i2c_device_address=0x50,size={},bank_number=0 \
+                    --set {} -y".format(self.mst_pci_device, self.slot_id, self.sdk_index, device_address, page, num_bytes, res)
+            result = subprocess.check_output(cmd, universal_newlines=True, shell=True)
+
+        except subprocess.CalledProcessError as e:
+            logger.log_error("Error! Unable to write data for {} port, page {} offset {}, rc = {}, err msg: {}".format(self.sdk_index, page, device_address, e.returncode, e.output))
+            return False
+        return True
+
+    def read_eeprom(self, offset, num_bytes):
+        """
+        Read eeprom specfic bytes beginning from a random offset with size as num_bytes
+
+        Returns:
+            bytearray, if raw sequence of bytes are read correctly from the offset of size num_bytes
+            None, if the read_eeprom fails
+
+        Example:
+        mlxreg -d /dev/mst/mt52100_pciconf0 --reg_name MCIA --indexes slot_index=0,module=1,device_address=148,page_number=0,i2c_device_address=0x50,size=16,bank_number=0 -g
+        Sending access register...
+
+        Field Name            | Data
+        ===================================
+        status                | 0x00000000
+        slot_index            | 0x00000000
+        module                | 0x00000001
+        l                     | 0x00000000
+        device_address        | 0x00000094
+        page_number           | 0x00000000
+        i2c_device_address    | 0x00000050
+        size                  | 0x00000010
+        bank_number           | 0x00000000
+        dword[0]              | 0x43726564
+        dword[1]              | 0x6f202020
+        dword[2]              | 0x20202020
+        dword[3]              | 0x20202020
+        dword[4]              | 0x00000000
+        dword[5]              | 0x00000000
+        ....
+        16 bytes to read from dword -> 0x437265646f2020202020202020202020 -> Credo
+
+        """
+        # add descriprion
+        # recalculate offset and page
+        if offset < SFP_PAGE_SIZE:
+            page = 0
+            device_address = offset
+        else:
+            page = (offset - SFP_PAGE_SIZE) // SFP_IDENTFIER_UPPER_PAGE + 1
+            # calculate offset per page
+            device_address = (offset - SFP_PAGE_SIZE) % SFP_IDENTFIER_UPPER_PAGE + SFP_IDENTFIER_UPPER_PAGE
+
+        try:
+            cmd = "mlxreg -d /dev/mst/{} --reg_name MCIA --indexes \
+                    slot_index={},module={},device_address={},page_number={},i2c_device_address=0x50,size={},bank_number=0 \
+                    --get | grep dword".format(self.mst_pci_device, self.slot_id, self.sdk_index, device_address, page, num_bytes)
+            result = subprocess.check_output(cmd, universal_newlines=True, shell=True)
+
+        except subprocess.CalledProcessError as e:
+            logger.log_error("Error! Unable to write data for {} port, page {} offset {}, rc = {}, err msg: {}".format(self.sdk_index, page, device_address, e.returncode, e.output))
+            return None
+
+        arr = result.split('\n')
+        dword_num = num_bytes // BYTES_IN_DWORD
+        used_bytes_in_dword = num_bytes % BYTES_IN_DWORD
+
+        res = ""
+        i = 0
+        for i in range(dword_num):
+            dword = arr[i].split()[2]
+            res += dword[2:]
+
+        if used_bytes_in_dword:
+            # Cut needed info and insert into final hex string
+            # Example: 3 bytes : 0x12345600
+            #                      ^    ^
+            dword = arr[i].split()[2]
+            res += dword[2 : 2 + used_bytes_in_dword * 2]
+        return bytearray.fromhex(res)
+
+        return bytearray.fromhex(res)
 
     def get_transceiver_info(self):
         """
