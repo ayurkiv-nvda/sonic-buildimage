@@ -27,6 +27,60 @@ sys.path.insert(0, modules_path)
 
 from sonic_platform.sfp import SFP, SX_PORT_MODULE_STATUS_INITIALIZING, SX_PORT_MODULE_STATUS_PLUGGED, SX_PORT_MODULE_STATUS_UNPLUGGED, SX_PORT_MODULE_STATUS_PLUGGED_WITH_ERROR, SX_PORT_MODULE_STATUS_PLUGGED_DISABLED
 from sonic_platform.chassis import Chassis
+from sonic_platform.sfp import MlxregManager
+
+read_eeprom_output = """
+Sending access register...
+Field Name            | Data
+===================================
+status                | 0x00000000
+slot_index            | 0x00000000
+module                | 0x00000001
+l                     | 0x00000000
+device_address        | 0x000000a8
+page_number           | 0x00000000
+i2c_device_address    | 0x00000050
+size                  | 0x00000010
+bank_number           | 0x00000000
+dword[0]              | 0x43414331
+dword[1]              | 0x31353332
+dword[2]              | 0x31503250
+dword[3]              | 0x41324d53
+dword[4]              | 0x00000000
+dword[5]              | 0x00000000
+dword[6]              | 0x00000000
+dword[7]              | 0x00000000
+dword[8]              | 0x00000000
+dword[9]              | 0x00000000
+dword[10]             | 0x00000000
+dword[11]             | 0x00000000
+dword[12]             | 0x00000000
+dword[13]             | 0x00000000
+dword[14]             | 0x00000000
+dword[15]             | 0x00000000
+dword[16]             | 0x00000000
+dword[17]             | 0x00000000
+dword[18]             | 0x00000000
+dword[19]             | 0x00000000
+dword[20]             | 0x00000000
+dword[21]             | 0x00000000
+dword[22]             | 0x00000000
+dword[23]             | 0x00000000
+dword[24]             | 0x00000000
+dword[25]             | 0x00000000
+dword[26]             | 0x00000000
+dword[27]             | 0x00000000
+dword[28]             | 0x00000000
+dword[29]             | 0x00000000
+dword[30]             | 0x00000000
+dword[31]             | 0x00000000
+===================================
+"""
+
+y_cable_part_number = "CAC115321P2PA2MS"
+write_eeprom_dword1 = "dword[0]=0x01020304"
+write_eeprom_dword2 = "dword[0]=0x01020304,dword[1]=0x05060000"
+
 
 class TestSfp:
     @mock.patch('sonic_platform.device_data.DeviceDataManager.get_linecard_count', mock.MagicMock(return_value=8))
@@ -80,3 +134,30 @@ class TestSfp:
             description = sfp.get_error_description()
 
             assert description == expected_description
+
+    @mock.patch('sonic_platform.sfp.SFP.get_mst_pci_device', mock.MagicMock(return_value="pciconf"))
+    @mock.patch('sonic_platform.sfp.MlxregManager.write_mlxreg_eeprom', mock.MagicMock(return_value=True))
+    def test_sfp_write_eeprom(self):
+        mlxreg_mngr = MlxregManager("", 0, 0)
+        write_buffer = bytearray([1,2,3,4])
+        offset = 793
+
+        sfp = SFP(0)
+        sfp.write_eeprom(offset, 4, write_buffer)
+        MlxregManager.write_mlxreg_eeprom.assert_called_with(4, write_eeprom_dword1, 153, 5)
+
+        offset = 641
+        write_buffer = bytearray([1,2,3,4,5,6])
+        sfp.write_eeprom(offset, 6, write_buffer)
+        MlxregManager.write_mlxreg_eeprom.assert_called_with(6, write_eeprom_dword2, 129, 4)
+
+    @mock.patch('sonic_platform.sfp.SFP.get_mst_pci_device', mock.MagicMock(return_value="pciconf"))
+    @mock.patch('sonic_platform.sfp.MlxregManager.read_mlxred_eeprom', mock.MagicMock(return_value=read_eeprom_output))
+    def test_sfp_read_eeprom(self):
+        mlxreg_mngr = MlxregManager("", 0, 0)
+        write_buffer = bytearray([1,2,3,4])
+        offset = 644
+
+        sfp = SFP(0)
+        assert y_cable_part_number == sfp.read_eeprom(offset, 16).decode()
+        MlxregManager.read_mlxred_eeprom.assert_called_with(132, 4, 16)
