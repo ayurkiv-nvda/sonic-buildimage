@@ -113,5 +113,16 @@
             "digits_class": "true",
             "special_class": "true"
         }
+    },
+    "SYSTEM_DEFAULTS" : {
+{%- if include_mux == "y" %}
+        "mux_tunnel_ingress_acl": {
+{%- if sonic_asic_platform == "mellanox" %}
+            "state": "false"
+{% else %}
+            "state": "true"
+{% endif %}
+        }
+{% endif %}
     }
 }
