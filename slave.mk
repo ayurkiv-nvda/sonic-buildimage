@@ -484,6 +484,7 @@ $(info "LEGACY_SONIC_MGMT_DOCKER"        : "$(LEGACY_SONIC_MGMT_DOCKER)")
 $(info "INCLUDE_EXTERNAL_PATCHES"        : "$(INCLUDE_EXTERNAL_PATCHES)")
 $(info "PTF_ENV_PY_VER"                  : "$(PTF_ENV_PY_VER)")
 $(info "ENABLE_MULTIDB"                  : "$(ENABLE_MULTIDB)")
+$(info "COLLECT_CODE_COVERAGE"           : "$(COLLECT_CODE_COVERAGE)")
 $(info )
 else
 $(info SONiC Build System for $(CONFIGURED_PLATFORM):$(CONFIGURED_ARCH))
@@ -538,6 +539,11 @@ endif
 
 export kernel_procure_method=$(KERNEL_PROCURE_METHOD)
 export vs_build_prepare_mem=$(VS_PREPARE_MEM)
+export collect_code_coverage=$(COLLECT_CODE_COVERAGE)
+export python_dist_packages_dir=/usr/lib/python3/dist-packages
+export python_coverage_config=/etc/python3/coverage_config
+export python_coverage_dir=/var/lib/python/coverage
+
 
 ###############################################################################
 ## Canned sequences
