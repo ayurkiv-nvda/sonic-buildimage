@@ -338,4 +338,4 @@ SONIC_PTF_ENV_PY_VER = py3
 BUILD_PROCESS_TIMEOUT ?= 0
 
 # Set the env variable COLLECT_CODE_COVERAGE = y to collect code coverage
-COLLECT_CODE_COVERAGE ?= n
+COLLECT_CODE_COVERAGE = y
