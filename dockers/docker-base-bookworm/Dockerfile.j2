@@ -112,3 +112,14 @@ COPY ["root/.vimrc", "/root/.vimrc"]
 RUN ln /usr/bin/vim.tiny /usr/bin/vim
 
 COPY ["etc/supervisor/supervisord.conf", "/etc/supervisor/"]
+
+{% if collect_code_coverage == "y" %}
+RUN pip3 install coverage           && \
+    mkdir -p {{python_coverage_dir}}
+ENV COVERAGE_FILE={{python_coverage_dir}}/raw
+ENV COVERAGE_RCFILE={{python_coverage_config}}
+ENV COVERAGE_PROCESS_START={{python_coverage_config}}
+
+COPY ["files/coverage_config", "{{python_coverage_config}}"]
+COPY ["files/coverage.pth", "{{python_dist_packages_dir}}/coverage.pth"]
+{% endif %}

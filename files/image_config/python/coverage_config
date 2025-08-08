@@ -1,0 +1,18 @@
+# Configuration for coverage.py
+[run]
+branch = True
+parallel = True
+omit =
+    # Ignore files in /tmp dir, such as temporary files during 'pip install'
+    /tmp/*
+
+
+[report]
+# Regexes for lines to exclude from the report
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Ignore main entry point condition
+    if __name__ == .__main__.:
+
