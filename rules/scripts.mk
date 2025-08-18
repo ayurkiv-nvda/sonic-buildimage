@@ -32,6 +32,12 @@ $(SWSS_VARS_TEMPLATE)_PATH = files/build_templates
 COPP_CONFIG_TEMPLATE = copp_cfg.j2
 $(COPP_CONFIG_TEMPLATE)_PATH = files/image_config/copp
 
+PYTHON_COVERAGE_CONFIG = coverage_config
+$(PYTHON_COVERAGE_CONFIG)_PATH = files/image_config/python
+
+PYTHON_COVERAGE_PTH = coverage.pth
+$(PYTHON_COVERAGE_PTH)_PATH = files/image_config/python
+
 RSYSLOG_PLUGIN_CONF_J2 = rsyslog_plugin.conf.j2
 $(RSYSLOG_PLUGIN_CONF_J2)_PATH = files/build_templates
 
@@ -50,4 +56,6 @@ SONIC_COPY_FILES += $(CONFIGDB_LOAD_SCRIPT) \
                     $(SWSS_VARS_TEMPLATE) \
                     $(RSYSLOG_PLUGIN_CONF_J2) \
                     $(GITHUB_GET) \
-                    $(COPP_CONFIG_TEMPLATE)
+                    $(COPP_CONFIG_TEMPLATE) \
+                    $(PYTHON_COVERAGE_CONFIG) \
+                    $(PYTHON_COVERAGE_PTH)

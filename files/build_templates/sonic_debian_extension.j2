@@ -1188,3 +1188,16 @@ sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-mark unho
 {% if ENABLE_MULTIDB == "y" %}
 sudo touch $FILESYSTEM_ROOT_ETC_SONIC/enable_multidb
 {% endif %}
+
+{% if collect_code_coverage == "y" %}
+sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install coverage
+sudo mkdir -p -m777 $FILESYSTEM_ROOT/${python_coverage_dir}
+
+echo "COVERAGE_FILE=${python_coverage_dir}/raw
+COVERAGE_RCFILE=${python_coverage_config}
+COVERAGE_PROCESS_START=${python_coverage_config}" | sudo tee -a $FILESYSTEM_ROOT/etc/environment
+
+sudo cp $IMAGE_CONFIGS/python/coverage_config $FILESYSTEM_ROOT/${python_coverage_config}
+sudo cp $IMAGE_CONFIGS/python/coverage.pth $FILESYSTEM_ROOT/${python_dist_packages_dir}/coverage.pth
+{% endif %}
+

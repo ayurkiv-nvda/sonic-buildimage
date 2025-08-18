@@ -22,6 +22,7 @@ cgroup-tools==2.0.2-2
 chrony==4.3-2+deb12u1
 conntrack==1:1.4.7-1+b2
 containerd.io==1.6.21-1
+coverage==6.5.0
 cpio==2.13+dfsg-7.1
 cpp==4:12.2.0-3
 cpp-12==12.2.0-14+deb12u1
