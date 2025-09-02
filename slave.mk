@@ -537,10 +537,14 @@ endif
 export kernel_procure_method=$(KERNEL_PROCURE_METHOD)
 export vs_build_prepare_mem=$(VS_PREPARE_MEM)
 export collect_code_coverage=$(COLLECT_CODE_COVERAGE)
+export ENABLE_GCOV=$(COLLECT_CODE_COVERAGE)
 export python_dist_packages_dir=/usr/lib/python3/dist-packages
 export python_coverage_config=/etc/python3/coverage_config
 export python_coverage_dir=/var/lib/python/coverage
 
+ifeq ($(COLLECT_CODE_COVERAGE),y)
+export DEB_CONFIGURE_EXTRA_FLAGS=--enable-code-coverage
+endif
 
 ###############################################################################
 ## Canned sequences
