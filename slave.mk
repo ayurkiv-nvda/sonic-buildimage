@@ -1171,6 +1171,10 @@ $(addprefix $(TARGET_PATH)/, $(DOCKER_IMAGES)) : $(TARGET_PATH)/%.gz : .platform
 		sudo mount --bind $($*.gz_FILES_PATH) $($*.gz_PATH)/files $(LOG)
 		sudo mount --bind $(PYTHON_DEBS_PATH) $($*.gz_PATH)/python-debs $(LOG)
 		sudo mount --bind $(PYTHON_WHEELS_PATH) $($*.gz_PATH)/python-wheels $(LOG)
+ifeq ($(COLLECT_CODE_COVERAGE),y)
+		$(eval $(subst -,_,$(notdir $($*.gz_PATH)))_debs_dev=$(shell printf "$(subst $(SPACE),\n,$(call expand,$($*.gz_DEPENDS),DEPENDS))\n" | awk '!a[$$0]++'))
+		$(eval export $(subst -,_,$(notdir $($*.gz_PATH)))_debs=$($(subst -,_,$(notdir $($*.gz_PATH)))_debs) $($(subst -,_,$(notdir $($*.gz_PATH)))_debs_dev))
+endif
 		# Export variables for j2. Use path for unique variable names, e.g. docker_orchagent_debs
 		export include_system_eventd="$(INCLUDE_SYSTEM_EVENTD)"
 		export build_reduce_image_size="$(BUILD_REDUCE_IMAGE_SIZE)"
