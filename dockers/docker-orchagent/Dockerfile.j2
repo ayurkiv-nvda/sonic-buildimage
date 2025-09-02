@@ -80,4 +80,8 @@ RUN sonic-cfggen -a "{\"ENABLE_ASAN\":\"{{ENABLE_ASAN}}\"}" -t /usr/share/sonic/
 RUN rm -f /usr/share/sonic/templates/docker-init.j2
 RUN chmod 755 /usr/bin/docker-init.sh
 
+{%- if collect_code_coverage == "y" %}
+COPY ["files/collect_coverage.sh", "/usr/bin/"]
+{% endif %}
+
 ENTRYPOINT ["/usr/bin/docker-init.sh"]

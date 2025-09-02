@@ -1,6 +1,6 @@
 ##
 ## SPDX-FileCopyrightText: NVIDIA CORPORATION & AFFILIATES
-## Copyright (c) 2016-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+## Copyright (c) 2016-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 ## Apache-2.0
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,5 +82,10 @@ COPY ["ecmp_calculator/ecmp_calc.py", "/usr/bin"]
 COPY ["ecmp_calculator/ecmp_calc_sdk.py", "/usr/lib/ecmp_calc"]
 COPY ["ecmp_calculator/packet_scheme.py", "/usr/lib/ecmp_calc"]
 COPY ["lib/port_utils.py", "/usr/lib"]
+
+{%- if collect_code_coverage == "y" %}
+COPY ["files/collect_coverage.sh", "/usr/bin/"]
+{% endif %}
+
 
 ENTRYPOINT ["/usr/local/bin/supervisord"]

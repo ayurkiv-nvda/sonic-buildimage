@@ -59,3 +59,9 @@ SONIC_COPY_FILES += $(CONFIGDB_LOAD_SCRIPT) \
                     $(COPP_CONFIG_TEMPLATE) \
                     $(PYTHON_COVERAGE_CONFIG) \
                     $(PYTHON_COVERAGE_PTH)
+
+ifeq ($(COLLECT_CODE_COVERAGE), y)
+    COLLECT_COVERAGE_FILE = collect_coverage.sh
+    $(COLLECT_COVERAGE_FILE)_PATH = files/scripts
+    SONIC_COPY_FILES += $(COLLECT_COVERAGE_FILE)
+endif
