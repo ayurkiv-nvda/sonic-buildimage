@@ -97,6 +97,8 @@ export SONIC_OS_VERSION
 export FILES_PATH
 export PROJECT_ROOT
 export PTF_ENV_PY_VER
+export INSTALL_DEBUG_TOOLS
+export DBG_SRC_ARCHIVE
 
 ###############################################################################
 ## Utility rules
@@ -1609,11 +1611,6 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_INSTALLERS)) : $(TARGET_PATH)/% : \
 
 	# Build images for the MACHINE, DEPENDENT_MACHINE defined.
 	$(foreach dep_machine, $($*_MACHINE) $($*_DEPENDENT_MACHINE), \
-		DEBUG_IMG="$(INSTALL_DEBUG_TOOLS)" \
-		DEBUG_SRC_ARCHIVE_DIRS="$(DBG_SRC_ARCHIVE)" \
-		DEBUG_SRC_ARCHIVE_FILE="$(DBG_SRC_ARCHIVE_FILE)" \
-			scripts/dbg_files.sh
-
 		RFS_SQUASHFS_NAME=$*__$(dep_machine)__rfs.squashfs \
 		DEBUG_IMG="$(INSTALL_DEBUG_TOOLS)" \
 		DEBUG_SRC_ARCHIVE_FILE="$(DBG_SRC_ARCHIVE_FILE)" \

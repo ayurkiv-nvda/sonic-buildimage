@@ -1204,5 +1204,7 @@ COVERAGE_PROCESS_START=${python_coverage_config}" | sudo tee -a $FILESYSTEM_ROOT
 
 sudo cp $IMAGE_CONFIGS/python/coverage_config $FILESYSTEM_ROOT/${python_coverage_config}
 sudo cp $IMAGE_CONFIGS/python/coverage.pth $FILESYSTEM_ROOT/${python_dist_packages_dir}/coverage.pth
+sudo mkdir -p -m777 $FILESYSTEM_ROOT/src/
+sudo cp $files_path/$SONIC_SRC_FILES $FILESYSTEM_ROOT/src/
 {% endif %}
 
