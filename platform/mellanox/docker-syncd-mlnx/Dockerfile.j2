@@ -86,4 +86,9 @@ FROM $BASE
 RUN --mount=type=bind,from=base,target=/changes-to-image rsync -axAX --no-D --exclude=/sys --exclude=/proc --exclude=/dev --exclude=resolv.conf /changes-to-image/ /
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+{%- if collect_code_coverage == "y" %}
+COPY ["files/collect_coverage.sh", "/usr/bin/"]
+{% endif %}
+
 ENTRYPOINT ["/usr/local/bin/supervisord"]
