@@ -43,6 +43,16 @@ RUN apt-get update && \
 RUN pip3 install --upgrade pip
 RUN apt-get purge -y python-pip
 
+# Install coverage toolchain packages in regular syncd image when coverage is enabled
+{% if collect_code_coverage == "y" %}
+RUN apt-get update && apt-get install -y \
+        gcc g++ libstdc++-12-dev \
+        nlohmann-json3-dev libjansson-dev \
+        libgtest-dev libgmock-dev \
+        libprotobuf-dev protobuf-compiler \
+        libboost-dev
+{% endif %}
+
 {% if docker_syncd_mlnx_debs.strip() -%}
 # Copy locally-built Debian package dependencies
 {{ copy_files("debs/", docker_syncd_mlnx_debs.split(' '), "/debs/") }}

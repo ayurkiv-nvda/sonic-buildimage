@@ -37,6 +37,15 @@ RUN pip3 install pyroute2==0.5.14
 RUN apt-get remove -y gcc
 {% endif %}
 
+{% if collect_code_coverage == "y" %}
+RUN apt-get update && apt-get install -y \
+        gcc g++ libstdc++-12-dev \
+        nlohmann-json3-dev libjansson-dev \
+        libgtest-dev libgmock-dev \
+        libprotobuf-dev protobuf-compiler \
+        libboost-dev
+{% endif %}
+
 {% if docker_orchagent_debs.strip() -%}
 # Copy locally-built Debian package dependencies
 {{ copy_files("debs/", docker_orchagent_debs.split(' '), "/debs/") }}
